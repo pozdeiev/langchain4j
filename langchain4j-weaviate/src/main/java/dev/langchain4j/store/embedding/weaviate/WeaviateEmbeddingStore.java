@@ -18,12 +18,20 @@ import io.weaviate.client.v1.graphql.model.GraphQLError;
 import io.weaviate.client.v1.graphql.model.GraphQLResponse;
 import io.weaviate.client.v1.graphql.query.argument.NearVectorArgument;
 import io.weaviate.client.v1.graphql.query.fields.Field;
-import lombok.Builder;
 import org.apache.commons.lang3.ArrayUtils;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
-import static dev.langchain4j.internal.Utils.*;
+import static dev.langchain4j.internal.Utils.generateUUIDFrom;
+import static dev.langchain4j.internal.Utils.getOrDefault;
+import static dev.langchain4j.internal.Utils.isNullOrBlank;
+import static dev.langchain4j.internal.Utils.randomUUID;
 import static dev.langchain4j.internal.ValidationUtils.ensureNotBlank;
 import static dev.langchain4j.internal.ValidationUtils.ensureNotEmpty;
 import static io.weaviate.client.v1.data.replication.model.ConsistencyLevel.QUORUM;
@@ -69,7 +77,6 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
      * @param grpcPort          The port, e.g. 50051. This parameter is optional.
      * @param textFieldName     The name of the field that contains the text of a {@link TextSegment}. Default is "text".
      */
-    @Builder
     public WeaviateEmbeddingStore(
             String apiKey,
             String scheme,
@@ -115,6 +122,10 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         } else {
             return host + ":" + port;
         }
+    }
+
+    public static WeaviateEmbeddingStoreBuilder builder() {
+        return new WeaviateEmbeddingStoreBuilder();
     }
 
     @Override
@@ -290,7 +301,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
                 .properties(props)
                 .build();
     }
-    
+
     private void setMetadata(Map<String, Object> props, Map<String, Object> metadata) {
         if (metadata != null && !metadata.isEmpty()) {
             props.put(METADATA, metadata);
@@ -330,5 +341,101 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
 
     private String getObjectClass() {
         return objectClass;
+    }
+
+    public static class WeaviateEmbeddingStoreBuilder {
+
+        private String apiKey;
+        private String scheme;
+        private String host;
+        private Integer port;
+        private Boolean useGrpcForInserts;
+        private Boolean securedGrpc;
+        private Integer grpcPort;
+        private String objectClass;
+        private Boolean avoidDups;
+        private String consistencyLevel;
+        private Collection<String> metadataKeys;
+        private String textFieldName;
+
+        private WeaviateEmbeddingStoreBuilder() {
+        }
+
+        public WeaviateEmbeddingStoreBuilder apiKey(String apiKey) {
+            this.apiKey = apiKey;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder scheme(String scheme) {
+            this.scheme = scheme;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder host(String host) {
+            this.host = host;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder port(Integer port) {
+            this.port = port;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder useGrpcForInserts(Boolean useGrpcForInserts) {
+            this.useGrpcForInserts = useGrpcForInserts;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder securedGrpc(Boolean securedGrpc) {
+            this.securedGrpc = securedGrpc;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder grpcPort(Integer grpcPort) {
+            this.grpcPort = grpcPort;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder objectClass(String objectClass) {
+            this.objectClass = objectClass;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder avoidDups(Boolean avoidDups) {
+            this.avoidDups = avoidDups;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder consistencyLevel(String consistencyLevel) {
+            this.consistencyLevel = consistencyLevel;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder metadataKeys(Collection<String> metadataKeys) {
+            this.metadataKeys = metadataKeys;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder textFieldName(String textFieldName) {
+            this.textFieldName = textFieldName;
+            return this;
+        }
+
+        public WeaviateEmbeddingStore build() {
+            return new WeaviateEmbeddingStore(
+                    this.apiKey,
+                    this.scheme,
+                    this.host,
+                    this.port,
+                    this.useGrpcForInserts,
+                    this.securedGrpc,
+                    this.grpcPort,
+                    this.objectClass,
+                    this.avoidDups,
+                    this.consistencyLevel,
+                    this.metadataKeys,
+                    this.textFieldName
+            );
+        }
     }
 }
