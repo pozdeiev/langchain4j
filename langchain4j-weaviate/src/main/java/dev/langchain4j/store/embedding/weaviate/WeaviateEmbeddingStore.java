@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 import static dev.langchain4j.internal.Utils.generateUUIDFrom;
 import static dev.langchain4j.internal.Utils.getOrDefault;
@@ -52,7 +53,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
     private static final String NULL_VALUE = "<null>";
 
     private final WeaviateClient client;
-    private final String objectClass;
+    private final Supplier<String> objectClassSupplier;
     private final boolean avoidDups;
     private final String consistencyLevel;
     private final Collection<String> metadataKeys;
@@ -61,21 +62,21 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
     /**
      * Creates a new WeaviateEmbeddingStore instance.
      *
-     * @param apiKey            Your Weaviate API key. Not required for local deployment.
-     * @param scheme            The scheme, e.g. "https" of cluster URL. Find in under Details of your Weaviate cluster.
-     * @param host              The host, e.g. "langchain4j-4jw7ufd9.weaviate.network" of cluster URL.
-     *                          Find in under Details of your Weaviate cluster.
-     * @param port              The port, e.g. 8080. This parameter is optional.
-     * @param objectClass       The object class you want to store, e.g. "MyGreatClass". Must start from an uppercase letter.
-     * @param avoidDups         If true (default), then <code>WeaviateEmbeddingStore</code> will generate a hashed ID based on
-     *                          provided text segment, which avoids duplicated entries in DB.
-     *                          If false, then random ID will be generated.
-     * @param consistencyLevel  Consistency level: ONE, QUORUM (default) or ALL. Find more details <a href="https://weaviate.io/developers/weaviate/concepts/replication-architecture/consistency#tunable-write-consistency">here</a>.
-     * @param metadataKeys      Metadata keys that should be persisted (optional)
-     * @param useGrpcForInserts Use GRPC instead of HTTP for batch inserts only. <b>You still need HTTP configured for search</b>
-     * @param securedGrpc       The GRPC connection is secured
-     * @param grpcPort          The port, e.g. 50051. This parameter is optional.
-     * @param textFieldName     The name of the field that contains the text of a {@link TextSegment}. Default is "text".
+     * @param apiKey              Your Weaviate API key. Not required for local deployment.
+     * @param scheme              The scheme, e.g. "https" of cluster URL. Find in under Details of your Weaviate cluster.
+     * @param host                The host, e.g. "langchain4j-4jw7ufd9.weaviate.network" of cluster URL.
+     *                            Find in under Details of your Weaviate cluster.
+     * @param port                The port, e.g. 8080. This parameter is optional.
+     * @param objectClassSupplier The object class supplier you want to store, e.g. "MyGreatClass". Must start from an uppercase letter.
+     * @param avoidDups           If true (default), then <code>WeaviateEmbeddingStore</code> will generate a hashed ID based on
+     *                            provided text segment, which avoids duplicated entries in DB.
+     *                            If false, then random ID will be generated.
+     * @param consistencyLevel    Consistency level: ONE, QUORUM (default) or ALL. Find more details <a href="https://weaviate.io/developers/weaviate/concepts/replication-architecture/consistency#tunable-write-consistency">here</a>.
+     * @param metadataKeys        Metadata keys that should be persisted (optional)
+     * @param useGrpcForInserts   Use GRPC instead of HTTP for batch inserts only. <b>You still need HTTP configured for search</b>
+     * @param securedGrpc         The GRPC connection is secured
+     * @param grpcPort            The port, e.g. 50051. This parameter is optional.
+     * @param textFieldName       The name of the field that contains the text of a {@link TextSegment}. Default is "text".
      */
     public WeaviateEmbeddingStore(
             String apiKey,
@@ -85,7 +86,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
             Boolean useGrpcForInserts,
             Boolean securedGrpc,
             Integer grpcPort,
-            String objectClass,
+            Supplier<String> objectClassSupplier,
             Boolean avoidDups,
             String consistencyLevel,
             Collection<String> metadataKeys,
@@ -109,7 +110,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         } catch (AuthException e) {
             throw new IllegalArgumentException(e);
         }
-        this.objectClass = getOrDefault(objectClass, "Default");
+        this.objectClassSupplier = getOrDefault(objectClassSupplier, () -> () -> "Default");
         this.avoidDups = getOrDefault(avoidDups, true);
         this.consistencyLevel = getOrDefault(consistencyLevel, QUORUM);
         this.metadataKeys = getOrDefault(metadataKeys, Collections.emptyList());
@@ -340,7 +341,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
     }
 
     private String getObjectClass() {
-        return objectClass;
+        return objectClassSupplier.get();
     }
 
     public static class WeaviateEmbeddingStoreBuilder {
@@ -352,7 +353,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         private Boolean useGrpcForInserts;
         private Boolean securedGrpc;
         private Integer grpcPort;
-        private String objectClass;
+        private Supplier<String> objectClassSupplier;
         private Boolean avoidDups;
         private String consistencyLevel;
         private Collection<String> metadataKeys;
@@ -397,7 +398,12 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         }
 
         public WeaviateEmbeddingStoreBuilder objectClass(String objectClass) {
-            this.objectClass = objectClass;
+            this.objectClassSupplier = () -> objectClass;
+            return this;
+        }
+
+        public WeaviateEmbeddingStoreBuilder objectClassSupplier(Supplier<String> objectClassSupplier) {
+            this.objectClassSupplier = objectClassSupplier;
             return this;
         }
 
@@ -430,7 +436,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
                     this.useGrpcForInserts,
                     this.securedGrpc,
                     this.grpcPort,
-                    this.objectClass,
+                    this.objectClassSupplier,
                     this.avoidDups,
                     this.consistencyLevel,
                     this.metadataKeys,
