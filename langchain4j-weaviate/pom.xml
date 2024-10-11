@@ -16,12 +16,14 @@
     <description>Uses io.weaviate.client library which has a BSD 3-Clause license:
         https://github.com/weaviate/java-client/blob/main/LICENSE
     </description>
+    <version>0.35.0-SEGTERRA-SNAPSHOT</version>
 
     <dependencies>
 
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-core</artifactId>
+            <version>0.35.0</version>
         </dependency>
 
         <dependency>
@@ -45,6 +47,7 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-core</artifactId>
+            <version>0.35.0</version>
             <classifier>tests</classifier>
             <type>test-jar</type>
             <scope>test</scope>
@@ -73,6 +76,7 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-embeddings-all-minilm-l6-v2-q</artifactId>
+            <version>0.35.0</version>
             <scope>test</scope>
         </dependency>
 
