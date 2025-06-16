@@ -11,10 +11,12 @@
 
     <artifactId>langchain4j-weaviate</artifactId>
     <name>LangChain4j :: Integration :: Weaviate</name>
+    <version>1.0.1-beta6-SEGTERRA-SNAPSHOT</version>
 
     <properties>
         <!-- TODO: remove enforcer.skipRules -->
         <enforcer.skipRules>dependencyConvergence</enforcer.skipRules>
+        <project.version.upstream>1.0.1-beta6</project.version.upstream>
     </properties>
 
     <dependencies>
@@ -69,7 +71,7 @@
         <dependency>
             <groupId>dev.langchain4j</groupId>
             <artifactId>langchain4j-embeddings-all-minilm-l6-v2-q</artifactId>
-            <version>${project.version}</version>
+            <version>${project.version.upstream}</version>
             <scope>test</scope>
         </dependency>
 
@@ -95,6 +97,13 @@
                 <configuration>
                     <!-- The weaviate client has a BSD-3 license, see https://github.com/weaviate/java-client/blob/main/LICENSE -->
                     <skipCompliance>true</skipCompliance>
+                </configuration>
+            </plugin>
+            <plugin>
+                <groupId>com.diffplug.spotless</groupId>
+                <artifactId>spotless-maven-plugin</artifactId>
+                <configuration>
+                    <skip>true</skip>
                 </configuration>
             </plugin>
         </plugins>
