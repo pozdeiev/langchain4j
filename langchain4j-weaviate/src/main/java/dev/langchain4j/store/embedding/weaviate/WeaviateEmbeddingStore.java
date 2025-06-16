@@ -169,7 +169,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
     public void removeAll(Collection<String> ids) {
         ensureNotEmpty(ids, "ids");
         client.batch().objectsBatchDeleter()
-                .withClassName(objectClass)
+                .withClassName(getObjectClass())
                 .withWhere(WhereFilter.builder()
                         .path("id")
                         .operator(Operator.ContainsAny)
@@ -181,7 +181,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
     @Override
     public void removeAll() {
         client.batch().objectsBatchDeleter()
-                .withClassName(objectClass)
+                .withClassName(getObjectClass())
                 .run();
     }
 
@@ -217,7 +217,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         Result<GraphQLResponse> result = client
                 .graphQL()
                 .get()
-                .withClassName(objectClass)
+                .withClassName(getObjectClass())
                 .withFields(fields.toArray(new Field[0]))
                 .withNearVector(
                         NearVectorArgument
@@ -298,7 +298,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         props.put("indexSearchable", true);
         return WeaviateObject
                 .builder()
-                .className(objectClass)
+                .className(getObjectClass())
                 .id(id)
                 .vector(embedding.vectorAsList().toArray(ArrayUtils.EMPTY_FLOAT_OBJECT_ARRAY))
                 .properties(props)
@@ -366,6 +366,10 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
                 .map(Double::floatValue)
                 .collect(toList());
         return Embedding.from(vector);
+    }
+
+    private String getObjectClass() {
+        return objectClass;
     }
 
     public static class WeaviateEmbeddingStoreBuilder {
