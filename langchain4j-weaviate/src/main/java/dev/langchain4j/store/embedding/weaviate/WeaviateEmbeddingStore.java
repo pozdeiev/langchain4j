@@ -180,7 +180,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         }
         client.batch()
                 .objectsBatchDeleter()
-                .withClassName(objectClass)
+                .withClassName(getObjectClass())
                 .withWhere(WhereFilter.builder()
                         .path(new String[] {"id"})
                         .operator(Operator.ContainsAny)
@@ -192,7 +192,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
     @Override
     public void removeAll() {
         List<WeaviateObject> objects =
-                client.data().objectsGetter().withClassName(objectClass).run().getResult();
+                client.data().objectsGetter().withClassName(getObjectClass()).run().getResult();
 
         if (objects == null || objects.isEmpty()) {
             return;
@@ -207,7 +207,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
     public void remove(String id) {
         ensureNotBlank(id, "id");
 
-        client.data().deleter().withClassName(objectClass).withID(id).run();
+        client.data().deleter().withClassName(getObjectClass()).withID(id).run();
     }
 
     @Override
@@ -221,7 +221,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         // Therefore we fallback to client-side filtering.
 
         List<WeaviateObject> objects =
-                client.data().objectsGetter().withClassName(objectClass).run().getResult();
+                client.data().objectsGetter().withClassName(getObjectClass()).run().getResult();
 
         if (objects == null || objects.isEmpty()) {
             return;
@@ -304,7 +304,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         }
         Result<GraphQLResponse> result = client.graphQL()
                 .get()
-                .withClassName(objectClass)
+                .withClassName(getObjectClass())
                 .withFields(fields.toArray(new Field[0]))
                 .withNearVector(NearVectorArgument.builder()
                         .vector(request.queryEmbedding().vectorAsList().toArray(new Float[0]))
@@ -387,7 +387,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         props.put("indexFilterable", true);
         props.put("indexSearchable", true);
         return WeaviateObject.builder()
-                .className(objectClass)
+                .className(getObjectClass())
                 .id(id)
                 .vector(embedding.vectorAsList().toArray(ArrayUtils.EMPTY_FLOAT_OBJECT_ARRAY))
                 .properties(props)
@@ -481,7 +481,7 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
             return true;
         }
 
-        Result<WeaviateClass> result = client.schema().classGetter().withClassName(objectClass).run();
+        Result<WeaviateClass> result = client.schema().classGetter().withClassName(getObjectClass()).run();
         if (result.hasErrors()) {
             throw new IllegalArgumentException(result.getError().getMessages().stream()
                     .map(WeaviateErrorMessage::getMessage)
@@ -501,6 +501,10 @@ public class WeaviateEmbeddingStore implements EmbeddingStore<TextSegment> {
         }
         vectorNameResolved = true;
         return true;
+    }
+
+    private String getObjectClass() {
+        return objectClass;
     }
 
     public static class WeaviateEmbeddingStoreBuilder {
