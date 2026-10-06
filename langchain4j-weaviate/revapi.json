@@ -1,0 +1,18 @@
+[
+  {
+    "extension": "revapi.differences",
+    "configuration": {
+      "justification": "Enable dynamic Weaviate Class name.",
+      "differences": [
+        {
+          "ignore": true,
+          "code": "java.method.parameterTypeChanged",
+          "old": "parameter void dev.langchain4j.store.embedding.weaviate.WeaviateEmbeddingStore::<init>(java.lang.String, java.lang.String, java.lang.String, java.lang.Integer, java.lang.Boolean, java.lang.Boolean, java.lang.Integer, ===java.lang.String===, java.lang.Boolean, java.lang.String, java.util.Collection<java.lang.String>, java.lang.String, java.lang.String)",
+          "new": "parameter void dev.langchain4j.store.embedding.weaviate.WeaviateEmbeddingStore::<init>(java.lang.String, java.lang.String, java.lang.String, java.lang.Integer, java.lang.Boolean, java.lang.Boolean, java.lang.Integer, ===java.util.function.Supplier<java.lang.String>===, java.lang.Boolean, java.lang.String, java.util.Collection<java.lang.String>, java.lang.String, java.lang.String)",
+          "parameterIndex": "7",
+          "justification": "Replace String objectClass WeaviateEmbeddingStore constructor parameter with Supplier<String> objectClassSupplier."
+        }
+      ]
+    }
+  }
+]
